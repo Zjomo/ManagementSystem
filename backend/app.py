@@ -46,14 +46,20 @@ def index():
 # ==================== 竞赛管理API ====================
 @app.route('/api/competitions', methods=['GET'])
 def get_competitions():
-    """获取所有竞赛列表"""
+    """获取所有竞赛列表，按截止日期升序排列（最近的日期在前）"""
     try:
         conn = get_db_connection()
         competitions = conn.execute(
-            'SELECT * FROM competitions ORDER BY created_at DESC'
+            '''SELECT * FROM competitions 
+               ORDER BY 
+                   CASE 
+                       WHEN end_date IS NULL OR end_date = '' THEN 1 
+                       ELSE 0 
+                   END,
+                   end_date ASC'''
         ).fetchall()
         conn.close()
-        
+
         result = [dict(row) for row in competitions]
         log_message("信息", "获取竞赛列表成功", "竞赛管理")
         return jsonify({'success': True, 'data': result})
@@ -387,19 +393,19 @@ def delete_student_competition(relation_id):
 # ==================== 竞赛详情API（包含参赛学生） ====================
 @app.route('/api/competitions/<int:competition_id>/students', methods=['GET'])
 def get_competition_students(competition_id):
-    """获取某个竞赛的所有参赛学生信息"""
+    """获取某个竞赛的所有参赛学生信息，同时自动扫描官方材料目录"""
     try:
         conn = get_db_connection()
-        
+
         # 获取竞赛信息
         competition = conn.execute(
             'SELECT * FROM competitions WHERE id = ?', (competition_id,)
         ).fetchone()
-        
+
         if not competition:
             conn.close()
             return jsonify({'success': False, 'message': '竞赛不存在'}), 404
-        
+
         # 获取参赛学生列表
         students = conn.execute('''
             SELECT sc.id as relation_id, sc.project_name, sc.role, sc.registration_status,
@@ -410,14 +416,36 @@ def get_competition_students(competition_id):
             WHERE sc.competition_id = ?
             ORDER BY sc.created_at DESC
         ''', (competition_id,)).fetchall()
-        
+
         conn.close()
-        
+
+        comp_dict = dict(competition)
+
+        # 自动扫描官方材料目录
+        base_path = resolve_competition_folder(comp_dict)
+        official_materials_files = []
+        if base_path and os.path.exists(base_path):
+            official_dir = os.path.join(base_path, '00_官方材料')
+            if os.path.isdir(official_dir):
+                for name in sorted(os.listdir(official_dir)):
+                    item_path = os.path.join(official_dir, name)
+                    if name.startswith('.') or name in ('__pycache__', 'node_modules', '.git', 'logs'):
+                        continue
+                    if os.path.isfile(item_path):
+                        rel_path = '00_官方材料/' + name
+                        official_materials_files.append({
+                            'name': name,
+                            'path': rel_path,
+                            'size': os.path.getsize(item_path)
+                        })
+
+        comp_dict['official_materials_files'] = official_materials_files
+
         result = {
-            'competition': dict(competition),
+            'competition': comp_dict,
             'students': [dict(row) for row in students]
         }
-        
+
         log_message("信息", f"获取竞赛{competition_id}参赛学生列表成功", "关联管理")
         return jsonify({'success': True, 'data': result})
     except Exception as e:

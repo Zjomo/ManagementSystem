@@ -183,6 +183,12 @@
                     <!-- 竞赛列表视图 -->
                     <div id="competitionListView" class="page">
                         <div class="page-header">
+                            <div class="filter-bar" id="competitionFilterBar">
+                                <span class="filter-label">状态筛选：</span>
+                                <label class="filter-chip"><input type="checkbox" value="active" checked> <span>进行中</span></label>
+                                <label class="filter-chip"><input type="checkbox" value="upcoming" checked> <span>即将开始</span></label>
+                                <label class="filter-chip"><input type="checkbox" value="completed" checked> <span>已结束</span></label>
+                            </div>
                             <button class="btn btn-primary" id="addCompetitionBtn">
                                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="12" y1="5" x2="12" y2="19"></line>

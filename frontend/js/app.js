@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     loadDashboard();
     setupEventListeners();
+    initCompetitionFilters();
     // 初始化所有表格列宽拉伸（thead 静态存在即可初始化）
     initColumnResizer('timePlanTable');
     initColumnResizer('recentDataTable');
@@ -360,22 +361,41 @@ function restoreColumnWidths(tableId) {
 // 当前查看的竞赛ID
 let currentCompetitionId = null;
 
+// 竞赛状态筛选
+let competitionStatusFilter = ['active', 'upcoming', 'completed'];
+
+function initCompetitionFilters() {
+    const filterBar = document.getElementById('competitionFilterBar');
+    if (!filterBar) return;
+    const checkboxes = filterBar.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            competitionStatusFilter = Array.from(checkboxes)
+                .filter(c => c.checked)
+                .map(c => c.value);
+            loadCompetitions();
+        });
+    });
+}
+
 // 加载竞赛列表
 async function loadCompetitions() {
     try {
         const response = await fetch(`${API_BASE}/competitions`);
         const result = await response.json();
-        
+
         if (result.success) {
             const tbody = document.querySelector('#competitionsTable tbody');
             tbody.innerHTML = '';
-            
-            if (result.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:48px 0;color:var(--storm-cloud)">暂无竞赛数据，点击"添加竞赛"开始</td></tr>';
+
+            const filteredData = result.data.filter(comp => competitionStatusFilter.includes(comp.status));
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:48px 0;color:var(--storm-cloud)">暂无符合条件的竞赛数据</td></tr>';
             } else {
-                for (const comp of result.data) {
+                for (const comp of filteredData) {
                     const row = document.createElement('tr');
-                    
+
                     const safeName = escapeHtml(comp.name);
                     const safeUrl = escapeUrl(comp.official_url);
                     const safeDisplayText = escapeHtml(comp.official_url || '无');
@@ -383,18 +403,18 @@ async function loadCompetitions() {
                     const safeCategory = escapeHtml(comp.category || '未分类');
                     const statusClass = comp.status === 'active' ? 'active' : comp.status === 'upcoming' ? 'pending' : 'ended';
                     const statusText = getStatusText(comp.status);
-                    
+
                     let studentCount = 0;
                     try {
                         const studentsResponse = await fetch(`${API_BASE}/student-competitions?competition_id=${comp.id}`);
                         const studentsResult = await studentsResponse.json();
                         studentCount = studentsResult.success ? studentsResult.data.length : 0;
                     } catch(e) {}
-                    
+
                     const td1 = document.createElement('td');
                     td1.textContent = comp.name;
                     row.appendChild(td1);
-                    
+
                     const td2 = document.createElement('td');
                     if (comp.official_url && /^https?:\/\//i.test(comp.official_url)) {
                         const a = document.createElement('a');
@@ -409,31 +429,31 @@ async function loadCompetitions() {
                         td2.className = 'text-muted';
                     }
                     row.appendChild(td2);
-                    
+
                     const td3 = document.createElement('td');
                     td3.textContent = safeDate;
                     row.appendChild(td3);
-                    
+
                     const td4 = document.createElement('td');
                     td4.textContent = comp.category || '未分类';
                     row.appendChild(td4);
-                    
+
                     const td5 = document.createElement('td');
                     const badge = document.createElement('span');
                     badge.className = `badge badge-${statusClass}`;
                     badge.textContent = statusText;
                     td5.appendChild(badge);
                     row.appendChild(td5);
-                    
+
                     const td6 = document.createElement('td');
                     td6.className = 'text-mono';
                     td6.textContent = studentCount;
                     row.appendChild(td6);
-                    
+
                     const td7 = document.createElement('td');
                     td7.innerHTML = `<button class="btn btn-sm btn-ghost" onclick="viewCompetitionDetail(${comp.id})">查看详情</button><button class="btn btn-sm btn-ghost" onclick="editCompetition(${comp.id})">编辑</button><button class="btn btn-sm btn-danger" onclick="deleteCompetition(${comp.id})">删除</button>`;
                     row.appendChild(td7);
-                    
+
                     tbody.appendChild(row);
                 }
             }
@@ -478,28 +498,65 @@ async function viewCompetitionDetail(competitionId) {
             
             const materialsEl = document.getElementById('competitionDetailMaterials');
             materialsEl.innerHTML = '';
-            if (competition.official_materials) {
-                try {
-                    const materials = JSON.parse(competition.official_materials);
-                    if (materials.length > 0) {
-                        const materialLinks = document.createElement('div');
-                        materialLinks.className = 'material-links';
-                        materials.forEach(m => {
-                            const a = document.createElement('a');
-                            a.href = escapeUrl(m.url || '');
-                            a.target = '_blank';
-                            a.rel = 'noopener noreferrer';
-                            a.textContent = m.name;
-                            a.className = 'material-link';
-                            materialLinks.appendChild(a);
-                        });
-                        materialsEl.appendChild(materialLinks);
-                    } else {
-                        materialsEl.textContent = '暂无';
-                    }
-                } catch(e) {
-                    materialsEl.textContent = '暂无';
-                }
+
+            const officialFiles = competition.official_materials_files || [];
+            const dbMaterials = competition.official_materials ? (() => { try { return JSON.parse(competition.official_materials); } catch(e) { return []; } })() : [];
+
+            const hasMaterials = officialFiles.length > 0 || dbMaterials.length > 0;
+
+            if (hasMaterials) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'materials-wrapper';
+
+                const header = document.createElement('div');
+                header.className = 'materials-header';
+
+                const countBadge = document.createElement('span');
+                countBadge.className = 'materials-count';
+                countBadge.textContent = `共 ${officialFiles.length + dbMaterials.length} 个文件`;
+                header.appendChild(countBadge);
+
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'btn btn-sm btn-ghost materials-toggle-btn';
+                toggleBtn.textContent = '收起';
+                toggleBtn.dataset.collapsed = 'false';
+                toggleBtn.onclick = () => {
+                    const isCollapsed = toggleBtn.dataset.collapsed === 'true';
+                    toggleBtn.dataset.collapsed = isCollapsed ? 'false' : 'true';
+                    toggleBtn.textContent = isCollapsed ? '收起' : '展开';
+                    listContainer.classList.toggle('collapsed', !isCollapsed);
+                };
+                header.appendChild(toggleBtn);
+                wrapper.appendChild(header);
+
+                const listContainer = document.createElement('div');
+                listContainer.className = 'material-links';
+                listContainer.id = 'officialMaterialsList';
+
+                // 自动扫描的官方材料文件
+                officialFiles.forEach(f => {
+                    const a = document.createElement('a');
+                    a.href = `${API_BASE}/files/serve/${competitionId}?path=${encodeURIComponent(f.path)}`;
+                    a.target = '_blank';
+                    a.className = 'material-link';
+                    a.title = f.name + ' (' + formatFileSize(f.size) + ')';
+                    a.innerHTML = `<span class="material-link-icon">${getFileIcon(f.name)}</span><span class="material-link-name">${escapeHtml(f.name)}</span><span class="material-link-size">${formatFileSize(f.size)}</span>`;
+                    listContainer.appendChild(a);
+                });
+
+                // 数据库中存储的官方材料链接
+                dbMaterials.forEach(m => {
+                    const a = document.createElement('a');
+                    a.href = escapeUrl(m.url || '');
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.textContent = m.name;
+                    a.className = 'material-link';
+                    listContainer.appendChild(a);
+                });
+
+                wrapper.appendChild(listContainer);
+                materialsEl.appendChild(wrapper);
             } else {
                 materialsEl.textContent = '暂无';
             }

@@ -1616,3 +1616,129 @@ body {
     color: var(--storm-cloud);
     font-size: var(--text-sm);
 }
+
+/* ============================================
+   竞赛筛选栏
+   ============================================ */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-size: var(--text-xs);
+    color: var(--storm-cloud);
+    font-weight: var(--font-medium);
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background-color: var(--deep-slate);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    color: var(--light-steel);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.filter-chip:hover {
+    border-color: var(--border-light);
+}
+
+.filter-chip input[type="checkbox"] {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--storm-cloud);
+    border-radius: 3px;
+    background-color: var(--deep-slate);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+    margin: 0;
+}
+
+.filter-chip input[type="checkbox"]:checked {
+    background-color: var(--neon-lime);
+    border-color: var(--neon-lime);
+}
+
+.filter-chip input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--primary-text);
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+}
+
+.filter-chip:has(input:checked) {
+    background-color: rgba(228, 242, 34, 0.08);
+    border-color: rgba(228, 242, 34, 0.3);
+    color: var(--porcelain);
+}
+
+/* ============================================
+   官方材料放缩
+   ============================================ */
+.materials-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+}
+
+.materials-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+}
+
+.materials-count {
+    font-size: var(--text-xs);
+    color: var(--storm-cloud);
+}
+
+.materials-toggle-btn {
+    padding: 2px 8px;
+    font-size: var(--text-xs);
+}
+
+.material-links.collapsed {
+    max-height: 38px;
+    overflow: hidden;
+}
+
+.material-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.material-link-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.material-link-name {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.material-link-size {
+    font-size: 10px;
+    color: var(--fog-grey);
+    margin-left: 2px;
+}
