@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>竞赛信息管理系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">竞赛管理系统</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                    </svg>
+                    <span>仪表盘</span>
+                </a>
+                <a href="#" class="nav-item" data-page="competitions">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="7"></circle>
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                    </svg>
+                    <span>竞赛管理</span>
+                </a>
+                <a href="#" class="nav-item" data-page="students">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>学生管理</span>
+                </a>
+                <a href="#" class="nav-item" data-page="data">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <span>数据采集</span>
+                </a>
+                <a href="#" class="nav-item" data-page="logs">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>系统日志</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航 -->
+            <header class="top-header">
+                <h2 class="page-title" id="pageTitle">仪表盘</h2>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="refreshTimePlanBtn">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        更新
+                    </button>
+                    <button class="btn btn-primary" id="collectBtn">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        采集数据
+                    </button>
+                </div>
+            </header>
+
+            <!-- 页面内容 -->
+            <div class="page-content">
+                <!-- 仪表盘页面 -->
+                <div class="page" id="dashboard-page">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon competitions">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="8" r="7"></circle>
+                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="statCompetitions">0</h3>
+                                <p>竞赛总数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon students">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="statStudents">0</h3>
+                                <p>学生总数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon data">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="statData">0</h3>
+                                <p>采集数据</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon relations">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="statRelations">0</h3>
+                                <p>参与记录</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="time-plan-section">
+                        <div class="section-header">
+                            <h3>2026年度赛程规划</h3>
+                            <span class="time-plan-meta" id="timePlanMeta"></span>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="timePlanTable">
+                                <thead>
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>主题赛事</th>
+                                        <th>报名时间</th>
+                                        <th>提交作品时间</th>
+                                        <th>决赛时间</th>
+                                        <th>备注</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="recent-section">
+                        <div class="section-header">
+                            <h3>最新采集数据</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="recentDataTable">
+                                <thead>
+                                    <tr>
+                                        <th>标题</th>
+                                        <th>摘要</th>
+                                        <th>采集时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 竞赛管理页面 -->
+                <div class="page hidden" id="competitions-page">
+                    <!-- 竞赛列表视图 -->
+                    <div id="competitionListView" class="page">
+                        <div class="page-header">
+                            <button class="btn btn-primary" id="addCompetitionBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                添加竞赛
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="competitionsTable">
+                                <thead>
+                                    <tr>
+                                        <th>名称</th>
+                                        <th>官网链接</th>
+                                        <th>截止日期</th>
+                                        <th>类别</th>
+                                        <th>状态</th>
+                                        <th>参赛人数</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 竞赛详情视图（参赛学生列表） -->
+                    <div id="competitionDetailView" class="page hidden">
+                        <div class="page-header">
+                            <button class="btn btn-ghost" id="backToCompetitionListBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                                    <polyline points="12 19 5 12 12 5"></polyline>
+                                </svg>
+                                返回竞赛列表
+                            </button>
+                            <div class="header-actions">
+                                <button class="btn btn-primary" id="addStudentToCompetitionBtn">
+                                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    添加参赛学生
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 竞赛信息卡片 -->
+                        <div class="competition-info-card" id="competitionInfoCard">
+                            <h3 id="competitionDetailName"></h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">官方链接</span>
+                                    <a id="competitionDetailUrl" href="#" target="_blank" class="truncate"></a>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">截止日期</span>
+                                    <span id="competitionDetailEndDate"></span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">类别</span>
+                                    <span id="competitionDetailCategory"></span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">状态</span>
+                                    <span id="competitionDetailStatus"></span>
+                                </div>
+                                <div class="info-item info-item-full">
+                                    <span class="info-label">官方材料</span>
+                                    <span id="competitionDetailMaterials"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 文件浏览器 -->
+                        <div class="file-browser-panel" id="fileBrowserPanel">
+                            <div class="file-browser-header">
+                                <h3>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                    项目文件浏览
+                                </h3>
+                                <div class="file-browser-breadcrumb" id="fileBreadcrumb"></div>
+                            </div>
+                            <div class="file-browser-body">
+                                <div class="file-browser-sidebar" id="fileBrowserSidebar">
+                                    <div class="sidebar-section-title">快捷入口</div>
+                                    <button class="sidebar-quick-link active" data-path="">📁 根目录</button>
+                                    <button class="sidebar-quick-link" data-path="00_官方材料">📋 官方材料</button>
+                                    <button class="sidebar-quick-link" data-path="00_赛题">📝 赛题</button>
+                                    <button class="sidebar-quick-link" data-path="00_参赛学生">👥 参赛学生</button>
+                                </div>
+                                <div class="file-browser-content" id="fileBrowserContent">
+                                    <div class="empty-state">选择左侧快捷入口开始浏览</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 参赛学生表格 -->
+                        <div class="table-container">
+                            <table class="data-table" id="competitionStudentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>学生姓名</th>
+                                        <th>年级/专业</th>
+                                        <th>项目名称</th>
+                                        <th>角色</th>
+                                        <th>参赛状态</th>
+                                        <th>项目材料</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 学生管理页面 -->
+                <div class="page hidden" id="students-page">
+                    <div class="page-header">
+                        <button class="btn btn-primary" id="addStudentBtn">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            添加学生
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="studentsTable">
+                            <thead>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th>年级</th>
+                                    <th>专业</th>
+                                    <th>电话</th>
+                                    <th>邮箱</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 资讯中心页面 -->
+                <div class="page hidden" id="data-page">
+                    <div class="news-center">
+                        <div class="news-header">
+                            <div>
+                                <h3>资讯中心</h3>
+                                <p class="news-subtitle">各赛事官网最新资讯动态</p>
+                            </div>
+                            <button class="btn btn-primary" id="collectDataBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                </svg>
+                                立即采集
+                            </button>
+                        </div>
+                        <div class="news-grid" id="newsGrid"></div>
+                    </div>
+                </div>
+
+                <!-- 资讯详情模态框 -->
+                <div class="modal" id="newsModal">
+                    <div class="modal-content modal-lg">
+                        <div class="modal-header">
+                            <h3 id="newsModalTitle">资讯详情</h3>
+                            <button class="modal-close" id="newsModalClose">&times;</button>
+                        </div>
+                        <div class="modal-body" id="newsModalBody"></div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" id="newsModalCloseBtn">关闭</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统日志页面 -->
+                <div class="page hidden" id="logs-page">
+                    <div class="section-header">
+                        <h3>系统日志</h3>
+                    </div>
+                    <div class="logs-container">
+                        <div class="log-list" id="logList"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">标题</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modalCancel">取消</button>
+                <button class="btn btn-primary" id="modalConfirm">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
