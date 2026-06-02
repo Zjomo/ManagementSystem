@@ -576,11 +576,13 @@ async function viewCompetitionDetail(competitionId) {
                     row.appendChild(td1);
                     
                     const td2 = document.createElement('td');
-                    td2.textContent = (student.grade || '') + (student.grade && student.major ? '/' : '') + (student.major || '');
+                    const displayGrade = student.folder_grade || student.grade || '';
+                    const displayMajor = student.major || '';
+                    td2.textContent = displayGrade + (displayGrade && displayMajor ? '/' : '') + displayMajor;
                     row.appendChild(td2);
                     
                     const td3 = document.createElement('td');
-                    td3.textContent = student.project_name || '未设置';
+                    td3.textContent = student.folder_project_name || student.project_name || '未设置';
                     row.appendChild(td3);
                     
                     const td4 = document.createElement('td');
@@ -595,29 +597,80 @@ async function viewCompetitionDetail(competitionId) {
                     row.appendChild(td5);
                     
                     const td6 = document.createElement('td');
+                    const materialWrapper = document.createElement('div');
+                    materialWrapper.className = 'student-materials-cell';
+
+                    // 数据库中上传的材料
                     if (student.material_files) {
                         try {
                             const materials = JSON.parse(student.material_files);
                             if (materials.length > 0) {
-                                const materialList = document.createElement('div');
-                                materialList.className = 'material-list';
+                                const dbList = document.createElement('div');
+                                dbList.className = 'material-list';
                                 materials.forEach(f => {
                                     const a = document.createElement('a');
                                     a.href = `/api/download-material/${escapeHtml(f)}`;
                                     a.className = 'material-file';
                                     a.download = '';
                                     a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' + escapeHtml(f);
-                                    materialList.appendChild(a);
+                                    dbList.appendChild(a);
                                 });
-                                td6.appendChild(materialList);
-                            } else {
-                                td6.textContent = '无';
+                                materialWrapper.appendChild(dbList);
                             }
-                        } catch(e) {
-                            td6.textContent = '无';
-                        }
-                    } else {
+                        } catch(e) {}
+                    }
+
+                    // 自动映射的参赛学生文件夹中的报名材料
+                    const regMaterials = student.folder_registration_materials || [];
+                    if (regMaterials.length > 0) {
+                        const regSection = document.createElement('div');
+                        regSection.className = 'material-section';
+                        const regTitle = document.createElement('div');
+                        regTitle.className = 'material-section-title';
+                        regTitle.textContent = '报名材料';
+                        regSection.appendChild(regTitle);
+                        const regList = document.createElement('div');
+                        regList.className = 'material-list';
+                        regMaterials.forEach(f => {
+                            const a = document.createElement('a');
+                            a.href = `/${escapeHtml(f.path)}`;
+                            a.className = 'material-file';
+                            a.download = '';
+                            a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' + escapeHtml(f.name);
+                            regList.appendChild(a);
+                        });
+                        regSection.appendChild(regList);
+                        materialWrapper.appendChild(regSection);
+                    }
+
+                    // 自动映射的参赛学生文件夹
+                    const matchedFolders = student.matched_folders || [];
+                    if (matchedFolders.length > 0) {
+                        const folderList = document.createElement('div');
+                        folderList.className = 'student-folder-list';
+                        matchedFolders.forEach(folder => {
+                            const folderChip = document.createElement('a');
+                            folderChip.className = 'student-folder-chip';
+                            folderChip.href = '#';
+                            folderChip.title = folder.name;
+                            folderChip.innerHTML = `<span class="folder-icon">📁</span><span class="folder-name">${escapeHtml(folder.name)}</span>`;
+                            folderChip.onclick = (e) => {
+                                e.preventDefault();
+                                // 打开文件浏览器并定位到该学生文件夹
+                                document.getElementById('fileBrowserPanel').scrollIntoView({ behavior: 'smooth' });
+                                browseCompetitionFiles(folder.path);
+                                // 同步侧边栏高亮
+                                document.querySelectorAll('#fileBrowserSidebar .sidebar-quick-link').forEach(l => l.classList.remove('active'));
+                            };
+                            folderList.appendChild(folderChip);
+                        });
+                        materialWrapper.appendChild(folderList);
+                    }
+
+                    if (materialWrapper.childNodes.length === 0) {
                         td6.textContent = '无';
+                    } else {
+                        td6.appendChild(materialWrapper);
                     }
                     row.appendChild(td6);
                     

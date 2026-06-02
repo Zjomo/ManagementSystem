@@ -391,9 +391,92 @@ def delete_student_competition(relation_id):
         return jsonify({'success': False, 'message': str(e)}), 500
 
 # ==================== 竞赛详情API（包含参赛学生） ====================
+def parse_student_folder_name(folder_name):
+    """解析参赛学生文件夹名称，支持格式：项目名称-学生姓名-年级
+    返回 (student_name, grade, project_name)
+    例如：
+      '金刚石n型掺杂的理论研究-罗旭东-研一' -> ('罗旭东', '研一', '金刚石n型掺杂的理论研究')
+      '罗旭东-研一' -> ('罗旭东', '研一', '')
+      '一种稀疏矩阵运算的芯片系统的设计与实现-孔德鹏-研一-陈凯鸿-研二' -> ('孔德鹏', '研一', '一种稀疏矩阵运算的芯片系统的设计与实现')
+    """
+    parts = [p.strip() for p in folder_name.split('-') if p.strip()]
+    if len(parts) >= 3:
+        # 最后一段是年级，倒数第二段是学生姓名，前面的是项目名称
+        grade = parts[-1]
+        student_name = parts[-2]
+        project_name = '-'.join(parts[:-2])
+        return student_name, grade, project_name
+    elif len(parts) == 2:
+        # 只有学生姓名和年级
+        return parts[0], parts[1], ''
+    else:
+        # 无法解析，返回原名称
+        return folder_name, '', ''
+
+
+def scan_student_folders(base_path, students):
+    """扫描 00_参赛学生 目录，按学生姓名匹配文件夹，返回每个学生关联的文件夹列表"""
+    student_dir = os.path.join(base_path, '00_参赛学生')
+    if not os.path.isdir(student_dir):
+        return {}
+
+    # 收集所有子文件夹并解析名称
+    all_folders = []
+    for name in sorted(os.listdir(student_dir)):
+        item_path = os.path.join(student_dir, name)
+        if name.startswith('.') or not os.path.isdir(item_path):
+            continue
+        parsed_name, parsed_grade, project_name = parse_student_folder_name(name)
+
+        # 扫描报名材料文件夹
+        registration_materials = []
+        reg_dir = os.path.join(item_path, '报名材料')
+        if os.path.isdir(reg_dir):
+            for fname in sorted(os.listdir(reg_dir)):
+                fpath = os.path.join(reg_dir, fname)
+                if fname.startswith('.') or not os.path.isfile(fpath):
+                    continue
+                registration_materials.append({
+                    'name': fname,
+                    'path': f'00_参赛学生/{name}/报名材料/{fname}',
+                    'size': os.path.getsize(fpath)
+                })
+
+        all_folders.append({
+            'name': name,
+            'path': '00_参赛学生/' + name,
+            'full_path': item_path,
+            'parsed_name': parsed_name,
+            'parsed_grade': parsed_grade,
+            'project_name': project_name,
+            'registration_materials': registration_materials
+        })
+
+    # 为每个学生匹配文件夹
+    result = {}
+    for student in students:
+        student_name = (student.get('student_name') or '').strip()
+        student_grade = (student.get('grade') or '').strip()
+        if not student_name:
+            continue
+        matched = []
+        for folder in all_folders:
+            if folder['parsed_name'] == student_name:
+                if student_grade and folder['parsed_grade']:
+                    if folder['parsed_grade'] == student_grade:
+                        matched.append(folder)
+                else:
+                    matched.append(folder)
+            elif student_name in folder['name']:
+                matched.append(folder)
+        if matched:
+            result[student_name] = matched
+    return result
+
+
 @app.route('/api/competitions/<int:competition_id>/students', methods=['GET'])
 def get_competition_students(competition_id):
-    """获取某个竞赛的所有参赛学生信息，同时自动扫描官方材料目录"""
+    """获取某个竞赛的所有参赛学生信息，同时自动扫描官方材料和参赛学生目录"""
     try:
         conn = get_db_connection()
 
@@ -420,10 +503,12 @@ def get_competition_students(competition_id):
         conn.close()
 
         comp_dict = dict(competition)
+        students_list = [dict(row) for row in students]
 
         # 自动扫描官方材料目录
         base_path = resolve_competition_folder(comp_dict)
         official_materials_files = []
+        student_folders_map = {}
         if base_path and os.path.exists(base_path):
             official_dir = os.path.join(base_path, '00_官方材料')
             if os.path.isdir(official_dir):
@@ -439,11 +524,36 @@ def get_competition_students(competition_id):
                             'size': os.path.getsize(item_path)
                         })
 
+            # 自动扫描参赛学生目录
+            student_folders_map = scan_student_folders(base_path, students_list)
+
         comp_dict['official_materials_files'] = official_materials_files
+        comp_dict['student_folders'] = student_folders_map
+
+        # 将文件夹信息附加到每个学生记录上
+        for student in students_list:
+            student_name = (student.get('student_name') or '').strip()
+            matched_folders = student_folders_map.get(student_name, [])
+            student['matched_folders'] = matched_folders
+
+            # 使用文件夹信息覆盖数据库字段（文件夹是更准确的来源）
+            if matched_folders:
+                folder = matched_folders[0]
+                folder_project = folder.get('project_name', '')
+                folder_grade = folder.get('parsed_grade', '')
+                if folder_project:
+                    student['folder_project_name'] = folder_project
+                if folder_grade:
+                    student['folder_grade'] = folder_grade
+
+                all_reg_materials = []
+                for f in matched_folders:
+                    all_reg_materials.extend(f.get('registration_materials', []))
+                student['folder_registration_materials'] = all_reg_materials
 
         result = {
             'competition': comp_dict,
-            'students': [dict(row) for row in students]
+            'students': students_list
         }
 
         log_message("信息", f"获取竞赛{competition_id}参赛学生列表成功", "关联管理")
