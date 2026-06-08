@@ -566,7 +566,7 @@ async function viewCompetitionDetail(competitionId) {
             
             const students = result.data.students;
             if (students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:48px 0;color:var(--storm-cloud)">暂无参赛学生，点击"添加参赛学生"开始</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:48px 0;color:var(--storm-cloud)">暂无参赛学生，点击"添加参赛学生"开始</td></tr>';
             } else {
                 students.forEach(student => {
                     const row = document.createElement('tr');
@@ -574,6 +574,11 @@ async function viewCompetitionDetail(competitionId) {
                     const td1 = document.createElement('td');
                     td1.textContent = student.student_name;
                     row.appendChild(td1);
+                    
+                    const tdAccount = document.createElement('td');
+                    tdAccount.className = 'text-mono';
+                    tdAccount.textContent = student.account || student.phone || '未填写';
+                    row.appendChild(tdAccount);
                     
                     const td2 = document.createElement('td');
                     const displayGrade = student.folder_grade || student.grade || '';
@@ -728,7 +733,7 @@ async function loadStudents() {
             tbody.innerHTML = '';
             
             if (result.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无学生数据，点击"添加学生"开始</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无学生数据，点击"添加学生"开始</td></tr>';
             } else {
                 result.data.forEach(student => {
                     const row = document.createElement('tr');
@@ -738,6 +743,7 @@ async function loadStudents() {
                         <td>${escapeHtml(student.major || '未填写')}</td>
                         <td class="text-mono">${escapeHtml(student.phone || '未填写')}</td>
                         <td>${escapeHtml(student.email || '未填写')}</td>
+                        <td class="text-mono">${escapeHtml(student.password || '未填写')}</td>
                         <td>
                             <button class="btn btn-sm btn-ghost" onclick="editStudent(${student.id})">编辑</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.id})">删除</button>
@@ -1045,6 +1051,10 @@ function showStudentModal(student = null) {
                 <label for="studentEmail">邮箱</label>
                 <input type="email" id="studentEmail" value="${student ? escapeHtml(student.email || '') : ''}">
             </div>
+            <div class="form-group">
+                <label for="studentPassword">密码</label>
+                <input type="text" id="studentPassword" value="${student ? escapeHtml(student.password || '') : ''}">
+            </div>
         </form>
     `;
     
@@ -1062,7 +1072,8 @@ function showStudentModal(student = null) {
             grade: document.getElementById('studentGrade').value.trim(),
             major: document.getElementById('studentMajor').value.trim(),
             phone: document.getElementById('studentPhone').value.trim(),
-            email: document.getElementById('studentEmail').value.trim()
+            email: document.getElementById('studentEmail').value.trim(),
+            password: document.getElementById('studentPassword').value.trim()
         };
         
         try {

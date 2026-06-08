@@ -67,6 +67,18 @@ def migrate_db():
     except:
         pass
     
+    # 新增: students password字段
+    try:
+        cursor.execute("ALTER TABLE students ADD COLUMN password TEXT")
+    except:
+        pass
+    
+    # 新增: students account字段（账号）
+    try:
+        cursor.execute("ALTER TABLE students ADD COLUMN account TEXT")
+    except:
+        pass
+    
     conn.commit()
     conn.close()
     print("数据库迁移完成")

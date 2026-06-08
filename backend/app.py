@@ -189,14 +189,16 @@ def create_student():
         cursor = conn.cursor()
         cursor.execute(
             '''INSERT INTO students 
-               (name, grade, major, phone, email) 
-               VALUES (?, ?, ?, ?, ?)''',
+               (name, grade, major, phone, email, password, account) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)''',
             (
                 data.get('name'),
                 data.get('grade', ''),
                 data.get('major', ''),
                 data.get('phone', ''),
-                data.get('email', '')
+                data.get('email', ''),
+                data.get('password', ''),
+                data.get('account', '')
             )
         )
         conn.commit()
@@ -219,7 +221,7 @@ def update_student(student_id):
         
         cursor.execute(
             '''UPDATE students 
-               SET name=?, grade=?, major=?, phone=?, email=?, updated_at=CURRENT_TIMESTAMP
+               SET name=?, grade=?, major=?, phone=?, email=?, password=?, account=?, updated_at=CURRENT_TIMESTAMP
                WHERE id=?''',
             (
                 data.get('name'),
@@ -227,6 +229,8 @@ def update_student(student_id):
                 data.get('major'),
                 data.get('phone'),
                 data.get('email'),
+                data.get('password'),
+                data.get('account'),
                 student_id
             )
         )
