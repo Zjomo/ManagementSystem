@@ -1,4 +1,6 @@
 *.pyc
+*.safetensors
 competition_materials
 venv/
-utils/
+.venv/
+.next-build/

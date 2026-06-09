@@ -1,0 +1,77 @@
+{
+  "name": "presenton",
+  "productName": "Presenton Open Source",
+  "version": "0.8.0-beta",
+  "exportVersion": "v0.2.6",
+  "main": "app_dist/main.js",
+  "description": "Open-Source AI Presentation Generator",
+  "homepage": "https://presenton.ai",
+  "repository": "https://github.com/presenton/presenton",
+  "keywords": [
+    "electron",
+    "electron-builder",
+    "Microsoft Store",
+    "AI presentation generator",
+    "open-source",
+    "presentation software",
+    "tailwindcss",
+    "typescript",
+    "fastapi",
+    "nextjs",
+    "puppeteer",
+    "sharp",
+    "template management",
+    "slide generation",
+    "modern UI",
+    "automation"
+  ],
+  "scripts": {
+    "start": "node run_electron.cjs",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps",
+    "dev": "node -e \"require('fs').rmSync('app_dist',{recursive:true,force:true})\" && tsc && node run_electron.cjs",
+    "setup:env": "npm install && cd ../servers/fastapi && uv sync && cd ../nextjs && npm install && cd ../../electron && npm run setup:export-runtime",
+    "install:pyinstaller": "cd ../servers/fastapi && echo 'pyinstaller will be installed via uv run --with when building'",
+    "build:ts": "node -e \"require('fs').rmSync('app_dist',{recursive:true,force:true})\" && tsc",
+    "build:css": "tailwindcss -i ./resources/ui/assets/css/tailwind.import.css -o ./resources/ui/assets/css/tailwind.css --watch",
+    "build:vectorstore": "echo 'Using prebuilt shared icons vectorstore index'",
+    "build:export-runtime": "node sync_export_runtime.js",
+    "setup:export-runtime": "node sync_export_runtime.js",
+    "fetch:export-runtime": "node sync_export_runtime.js --force",
+    "fetch:export-runtime:latest": "EXPORT_RUNTIME_VERSION=latest node sync_export_runtime.js --force",
+    "build:nextjs": "node build_nextjs_resources.js",
+    "build:fastapi": "node -e \"require('fs').rmSync('resources/fastapi',{recursive:true,force:true})\" && npm run build:vectorstore && cross-env MEM0_SPACY_STRICT=true node ensure_spacy_model.js && cd ../servers/fastapi && uv run --with pyinstaller python -m PyInstaller --distpath ../../electron/resources server.spec && cd ../../electron && node copy_fastapi_assets.js",
+    "generate:version": "node generate_update.js",
+    "build:electron": "npm run generate:version && npm run build:export-runtime && node -e \"require('fs').rmSync('app_dist',{recursive:true,force:true})\" && tsc && node build.js",
+    "build:all": "npm run clean:build && npm run setup:env && npm run build:ts && npm run install:pyinstaller && npm run build:nextjs && npm run build:fastapi && npm run build:electron",
+    "clean:build": "node -e \"const fs=require('fs'); for (const p of ['resources/nextjs','resources/fastapi','app_dist']) fs.rmSync(p,{recursive:true,force:true})\""
+  },
+  "author": {
+    "name": "Presenton",
+    "email": "suraj@presenton.ai"
+  },
+  "dependencies": {
+    "@llamaindex/liteparse": "^1.5.3",
+    "@puppeteer/browsers": "^1.9.1",
+    "@sentry/electron": "^7.10.0",
+    "@tailwindcss/cli": "^4.1.5",
+    "@types/uuid": "^10.0.0",
+    "dotenv": "^16.5.0",
+    "electron-squirrel-startup": "^1.0.1",
+    "puppeteer": "^24.38.0",
+    "serve-handler": "^6.1.6",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^4.1.5",
+    "tree-kill": "^1.2.2",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^36.1.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
