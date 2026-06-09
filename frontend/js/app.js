@@ -26,6 +26,8 @@ function initNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
+            // 外部链接（如Mermaid图表）直接放行
+            if (item.getAttribute('target') === '_blank') return;
             e.preventDefault();
             const page = item.dataset.page;
             switchPage(page);

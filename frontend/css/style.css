@@ -203,6 +203,22 @@ body {
     stroke-width: 1.5;
 }
 
+.nav-item-external {
+    border-top: 1px solid var(--sidebar-border, rgba(255,255,255,0.06));
+    margin-top: var(--spacing-8);
+    padding-top: var(--spacing-12);
+}
+
+.badge-external {
+    font-size: 9px;
+    background: rgba(255,255,255,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--storm-cloud);
+    margin-left: auto;
+    line-height: 1.5;
+}
+
 /* ============================================
    主内容区
    ============================================ */

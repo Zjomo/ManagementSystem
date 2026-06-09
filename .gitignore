@@ -1,3 +1,4 @@
 *.pyc
 competition_materials
 venv/
+utils/
