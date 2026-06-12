@@ -26,8 +26,19 @@ def _base64url_decode(value: str) -> bytes:
     return base64.urlsafe_b64decode(padded.encode("utf-8"))
 
 
+def _get_user_config_path() -> Optional[str]:
+    """Resolve USER_CONFIG_PATH, falling back to APP_DATA_DIRECTORY/userConfig.json."""
+    path = get_user_config_path_env()
+    if path:
+        return path
+    app_data = os.environ.get("APP_DATA_DIRECTORY")
+    if app_data:
+        return os.path.join(app_data, "userConfig.json")
+    return None
+
+
 def _load_user_config() -> dict:
-    user_config_path = get_user_config_path_env()
+    user_config_path = _get_user_config_path()
     if not user_config_path or not os.path.exists(user_config_path):
         return {}
 
@@ -40,7 +51,7 @@ def _load_user_config() -> dict:
 
 
 def _save_user_config(config: dict) -> None:
-    user_config_path = get_user_config_path_env()
+    user_config_path = _get_user_config_path()
     if not user_config_path:
         raise ValueError("USER_CONFIG_PATH is not set")
 

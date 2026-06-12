@@ -73,7 +73,14 @@ if os.path.isdir(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Middlewares
-origins = ["*"]
+# Use specific origins instead of "*" because allow_credentials=True
+# prohibits the wildcard "*" per the CORS specification.
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

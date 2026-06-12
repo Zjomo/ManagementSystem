@@ -190,10 +190,13 @@ export const handleSaveLLMConfig = async (llmConfig: LLMConfig) => {
   if (typeof window !== "undefined" && window.electron?.setUserConfig) {
     await window.electron.setUserConfig(llmConfig);
   } else {
-    await fetch("/api/user-config", {
+    const res = await fetch("/api/user-config", {
       method: "POST",
       body: JSON.stringify(llmConfig),
     });
+    if (!res.ok) {
+      throw new Error(`Failed to save config: ${res.status} ${res.statusText}`);
+    }
   }
 
   store.dispatch(setLLMConfig(llmConfig));

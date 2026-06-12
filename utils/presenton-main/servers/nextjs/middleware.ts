@@ -59,6 +59,9 @@ function isApiAuthExempt(pathname: string): boolean {
   return (
     pathname.startsWith("/api/v1/auth/") ||
     pathname === "/api/telemetry-status" ||
+    pathname === "/api/can-change-keys" ||
+    pathname === "/api/has-required-key" ||
+    pathname === "/api/user-config" ||
     /** FastAPI `get_layout_by_name` fallback (no browser cookie in Docker). */
     pathname === "/api/template" ||
     pathname.startsWith("/api/export-presentation-data/")

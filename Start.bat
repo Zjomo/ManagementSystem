@@ -1,4 +1,4 @@
-﻿﻿﻿@echo off
+﻿﻿﻿﻿﻿@echo off
 setlocal
 
 cd /d "%~dp0"
@@ -51,8 +51,9 @@ if not exist "%PRESENTON_TEMP_DIRECTORY%" mkdir "%PRESENTON_TEMP_DIRECTORY%"
 set "PRESENTON_TEMP_DIRECTORY=%PRESENTON_TEMP_DIRECTORY:\=/%"
 set "TEMP_DIRECTORY=%PRESENTON_TEMP_DIRECTORY%"
 set "DATABASE_URL=sqlite:///%PRESENTON_APP_DATA%/fastapi.db"
+set "USER_CONFIG_PATH=%PRESENTON_APP_DATA%/userConfig.json"
 set "FAST_API_INTERNAL_URL=http://127.0.0.1:%PRESENTON_FASTAPI_PORT%"
-set "NEXT_PUBLIC_FAST_API=http://127.0.0.1:%PRESENTON_FASTAPI_PORT%"
+set "NEXT_PUBLIC_FAST_API=http://localhost:%PRESENTON_FASTAPI_PORT%"
 
 echo [3/3] Starting Presenton FastAPI server...
 pushd "utils\presenton-main\servers\fastapi"

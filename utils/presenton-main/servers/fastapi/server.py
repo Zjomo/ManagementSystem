@@ -17,6 +17,23 @@ if __name__ == "__main__":
 
     # Always bind absolute asset generation to the active runtime port.
     os.environ["FASTAPI_PUBLIC_URL"] = f"http://{host}:{args.port}"
+
+    # Default USER_CONFIG_PATH when not explicitly set.
+    if not os.environ.get("USER_CONFIG_PATH"):
+        if os.environ.get("APP_DATA_DIRECTORY"):
+            os.environ["USER_CONFIG_PATH"] = os.path.join(
+                os.environ["APP_DATA_DIRECTORY"], "userConfig.json"
+            )
+        else:
+            # Fallback: relative to this script's location.
+            _script_dir = os.path.dirname(os.path.abspath(__file__))
+            _default_app_data = os.path.abspath(
+                os.path.join(_script_dir, "..", "..", "app_data")
+            )
+            os.environ["USER_CONFIG_PATH"] = os.path.join(
+                _default_app_data, "userConfig.json"
+            )
+            os.environ.setdefault("APP_DATA_DIRECTORY", _default_app_data)
     
     uvicorn.run(
         "api.main:app",

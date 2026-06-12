@@ -669,7 +669,7 @@ const PresentonMode = ({ currentStep, setStep }: { currentStep: number, setStep:
                             {llmConfig.LLM === 'custom' && (
                                 <input
                                     type="text"
-                                    value={llmConfig.CUSTOM_LLM_URL}
+                                    value={llmConfig.CUSTOM_LLM_URL || ''}
                                     onChange={(e) => setLlmConfig(prev => ({
                                         ...prev,
                                         CUSTOM_LLM_URL: e.target.value

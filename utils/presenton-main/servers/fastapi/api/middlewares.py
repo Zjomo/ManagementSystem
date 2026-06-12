@@ -12,6 +12,16 @@ from utils.simple_auth import (
 from utils.user_config import update_env_with_user_config
 
 
+# CORS headers that must be present on every response (including auth failures)
+# because SessionAuthMiddleware short-circuits before CORSMiddleware runs.
+_CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "http://localhost:3001",
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Allow-Headers": "*",
+}
+
+
 class UserConfigEnvUpdateMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if get_can_change_keys_env() != "false":
@@ -22,6 +32,10 @@ class UserConfigEnvUpdateMiddleware(BaseHTTPMiddleware):
 class SessionAuthMiddleware(BaseHTTPMiddleware):
     _EXEMPT_PREFIXES = (
         "/api/v1/auth/",
+        "/api/v1/ppt/openai/models/available",
+        "/api/v1/ppt/google/models/available",
+        "/api/v1/ppt/anthropic/models/available",
+        "/api/v1/ppt/ollama/models/supported",
     )
     _PROTECTED_NON_API_PATHS = {
         "/docs",
@@ -60,6 +74,7 @@ class SessionAuthMiddleware(BaseHTTPMiddleware):
                     "detail": "Login setup is required",
                     "setup_required": True,
                 },
+                headers=_CORS_HEADERS,  # type: ignore[arg-type]
             )
 
         if not auth_status["authenticated"]:
@@ -73,6 +88,7 @@ class SessionAuthMiddleware(BaseHTTPMiddleware):
             return JSONResponse(
                 status_code=401,
                 content={"detail": "Unauthorized"},
+                headers=_CORS_HEADERS,  # type: ignore[arg-type]
             )
 
         request.state.auth_username = auth_status.get("username")
